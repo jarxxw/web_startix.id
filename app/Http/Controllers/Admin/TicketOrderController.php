@@ -54,5 +54,13 @@ class TicketOrderController extends Controller
 
         return redirect()->route('admin.tickets.index')->with('success', 'Data tiket berhasil dihapus.');
     }
+    public function success($id)
+{
+    // Cek apakah session ada
+   
+     $order = TicketOrder::findOrFail($id);
+   
+    return view('user.layouts.payment_page', compact('order'));
+}
 
 }

@@ -369,9 +369,11 @@ class EventController extends Controller
         'qrcode' => $kodeUnik,  // Simpan kode unik QR di sini
     ]);
 
-    $request->session()->forget('order_' . $event->id);
+    // $request->session()->forget('order_' . $event->user);
 
-    return redirect()->route('user.dashboard')->with('success', 'Order berhasil dikirim! Status: pending, menunggu konfirmasi admin.');
+    // return redirect()->route('user.dashboard')->with('success', 'Order berhasil dikirim! Status: pending, menunggu konfirmasi admin.');
+    // return view('user.layouts.payment_page');
+    return redirect()->route('order.success',$order->id);
     }
 
 
