@@ -62,8 +62,8 @@
                                         <a href="{{ route('admin.tickets.show', $order->id) }}"
                                             class="btn btn-info btn-sm px-2 py-1 mb-1">
                                             <i class="fas fa-eye"></i> View
-                                        {{-- </a>
-                                        @if($order->status == 'confirmed')
+                                        </a>
+                                        {{-- @if($order->status == 'confirmed')
                                             <a href="{{ route('admin.tickets.download-qr', $order->id) }}"
                                                 class="btn btn-success btn-sm px-2 py-1 mb-1">
                                                 <i class="fas fa-qrcode"></i> Download QR
@@ -73,7 +73,7 @@
                                                 onclick="alert('Tiket belum dikonfirmasi!')" disabled>
                                                 <i class="fas fa-qrcode"></i> Download QR
                                             </button>
-                                        @endif --}}
+                                        @endif --}} 
                                         <form action="{{ route('admin.tickets.destroy', $order->id) }}" method="POST"
                                             onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                             @csrf

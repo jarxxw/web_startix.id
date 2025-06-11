@@ -124,18 +124,14 @@ class EventController extends Controller
 
     public function create()
     {
-        if (!auth()->check() || auth()->user()->role !== 'superadmin') {
-            abort(403, 'Hanya superadmin yang dapat membuat event.');
-        }
+       
         return view('admin.events.create');
     }
 
     public function store(Request $request)
     {
         // Pastikan user terautentikasi dan memiliki peran superadmin
-        if (!auth()->check() || auth()->user()->role !== 'superadmin') {
-            abort(403, 'Hanya superadmin yang dapat membuat event.');
-        }
+       
 
         // Validasi data
         $validated = $request->validate([
@@ -218,28 +214,80 @@ class EventController extends Controller
         }
 
         // Data provinsi dan kabupaten/kota bisa diisi statis dulu
-        $provinces = [
-            'DKI Jakarta',
-            'Jawa Barat',
-            'Jawa Tengah',
-            'Jawa Timur',
-            'Bali',
-            'Sumatera Utara',
-            'Sumatera Selatan',
-            'Kalimantan Timur',
-            'Sulawesi Selatan'
-        ];
-        $cities = [
-            'Jakarta',
-            'Bandung',
-            'Semarang',
-            'Surabaya',
-            'Denpasar',
-            'Medan',
-            'Palembang',
-            'Balikpapan',
-            'Makassar'
-        ];
+      $provinces = [
+    'Aceh',
+    'Sumatera Utara',
+    'Sumatera Barat',
+    'Riau',
+    'Kepulauan Riau',
+    'Jambi',
+    'Bengkulu',
+    'Sumatera Selatan',
+    'Kepulauan Bangka Belitung',
+    'Lampung',
+    'DKI Jakarta',
+    'Jawa Barat',
+    'Banten',
+    'Jawa Tengah',
+    'DI Yogyakarta',
+    'Jawa Timur',
+    'Bali',
+    'Nusa Tenggara Barat',
+    'Nusa Tenggara Timur',
+    'Kalimantan Barat',
+    'Kalimantan Tengah',
+    'Kalimantan Selatan',
+    'Kalimantan Timur',
+    'Kalimantan Utara',
+    'Sulawesi Utara',
+    'Gorontalo',
+    'Sulawesi Tengah',
+    'Sulawesi Barat',
+    'Sulawesi Selatan',
+    'Sulawesi Tenggara',
+    'Maluku',
+    'Maluku Utara',
+    'Papua',
+    'Papua Barat',
+    'Papua Tengah',
+    'Papua Pegunungan',
+    'Papua Selatan',
+    'Papua Barat Daya'
+];
+
+    $cities = [
+    'Banda Aceh','Langsa','Lhokseumawe','Sabang','Subulussalam',
+    'Medan','Binjai','Sibolga','Pematangsiantar','Tanjung Balai','Tebing Tinggi','Padang Sidempuan','Gunungsitoli',
+    'Bukittinggi','Padang','Padangpanjang','Pariaman','Payakumbuh','Sawahlunto','Solok',
+    'Pekanbaru','Dumai',
+    'Jambi','Sungai Penuh',
+    'Palembang','Prabumulih','Pagar Alam','Lubuklinggau',
+    'Bengkulu',
+    'Bandar Lampung','Metro',
+    'Pangkalpinang',
+    'Cilegon','Serang','Tangerang','Tangerang Selatan',
+    'Bandung','Banjar','Bekasi','Bogor','Cimahi','Cirebon','Depok','Sukabumi','Tasikmalaya',
+    'Jakarta', // Kota Administrasi DKI
+    'Magelang','Pekalongan','Purwokerto','Salatiga','Semarang','Surakarta','Tegal',
+    'Yogyakarta',
+    'Surabaya','Batu','Blitar','Kediri','Madiun','Malang','Mojokerto','Pasuruan','Probolinggo',
+    'Denpasar',
+    'Mataram','Bima','Kupang',
+    'Pontianak','Singkawang',
+    'Palangkaraya',
+    'Banjarbaru','Banjarmasin',
+    'Balikpapan','Bontang','Samarinda',
+    'Tarakan',
+    'Manado','Bitung','Kotamobagu','Tomohon',
+    'Gorontalo',
+    'Palu',
+    'Makassar','Palopo','Parepare',
+    'Kendari','Bau-Bau',
+    'Ambon','Tual',
+    'Ternate','Tidore Kepulauan',
+    'Jayapura'
+];
+
         return view('user.layouts.order', compact('event', 'provinces', 'cities'));
     }
 
@@ -382,9 +430,7 @@ class EventController extends Controller
 
     public function destroy($id)
     {
-        if (!auth()->check() || auth()->user()->role !== 'superadmin') {
-            abort(403, 'Hanya superadmin yang dapat menghapus event.');
-        }
+       
         $event = Event::findOrFail($id);
         $event->delete();
         return redirect()->route('admin.events.index')->with('success', 'Event berhasil dihapus!');

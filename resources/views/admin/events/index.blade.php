@@ -55,7 +55,6 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
 
-                                @if(auth()->check() && auth()->user()->role === 'superadmin')
                                 <form action="{{ route('admin.events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus event ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -63,7 +62,7 @@
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
-                                @endif
+                                
                             </td>
                         </tr>
                         @empty

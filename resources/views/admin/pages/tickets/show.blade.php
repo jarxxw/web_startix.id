@@ -30,7 +30,7 @@
                         <li class="list-group-item"><strong>Nama Pengirim:</strong> {{ $order->sender_name }}</li>
                         <li class="list-group-item"><strong>Bukti Transfer:</strong>
                             @if($order->proof)
-                                <a href="{{ asset('storage/'.$order->proof) }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2"><i class="fas fa-image me-1"></i> Lihat Bukti</a>
+                                <a href="{{ asset($order->proof) }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2"><i class="fas fa-image me-1"></i> Lihat Bukti</a>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
