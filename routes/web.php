@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\TicketOrderController;
 use App\Http\Controllers\Admin\AdminController;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\CheckinController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -67,4 +69,6 @@ Route::get('tickets/export-excel', [TicketOrderController::class, 'exportConfirm
 // Optional: Export all tickets (non-admin, if needed)
 Route::get('/export-tickets', [ExportController::class, 'export'])->name('export.tickets');
 Route::get('/order-success/{id}', [TicketOrderController::class, 'success'])->name('order.success');
+
+
 

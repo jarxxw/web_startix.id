@@ -9,20 +9,13 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
+   public function up(): void
+{
+    if (!Schema::hasColumn('ticket_orders', 'qrcode')) {
         Schema::table('ticket_orders', function (Blueprint $table) {
-            $table->string('qrcode')->nullable()->unique()->after('status');
+            $table->string('qrcode')->nullable()->after('status');
         });
     }
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-      Schema::table('ticket_orders', function (Blueprint $table) {
-    $table->string('qrcode')->nullable()->after('status');
-    });
-    }
 };
