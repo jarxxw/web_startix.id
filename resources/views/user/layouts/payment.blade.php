@@ -12,7 +12,7 @@
                     <h5 class="mb-3">{{ $event->title }}</h5>
                     <div class="alert alert-info">
                         Silakan transfer ke rekening berikut:<br>
-                        <strong>{{ $rekening['no'] }} A/n {{ $rekening['an'] }}</strong>
+                        <strong>{{ $rekening    ['no'] }} A/n {{ $rekening['an'] }}</strong>
                     </div>
                     <form action="{{ route('events.payment.process', $event) }}" method="POST" enctype="multipart/form-data">
                         @csrf

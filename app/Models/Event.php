@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
+
 
 class Event extends Model
 {
@@ -52,4 +55,39 @@ class Event extends Model
     {
         return $this->event_date->format('Y');
     }
+    public function scopeBerjalan(Builder $query)
+    {
+    return $query->whereDate('event_date', '>=', Carbon::today())
+                     ->whereRaw('
+                         (SELECT COUNT(*) FROM ticket_orders 
+                          WHERE ticket_orders.event_id = events.id 
+                          AND ticket_orders.status = "confirmed")
+                         < events.capacity
+                     ');
+    }
+
+    public function scopeSelesai(Builder $query)
+    {
+    return $query->whereDate('event_date', '<', Carbon::today())
+                     ->orWhereRaw('
+                         (SELECT COUNT(*) FROM ticket_orders 
+                          WHERE ticket_orders.event_id = events.id 
+                          AND ticket_orders.status = "confirmed")
+                         >= events.capacity
+                     ');
+    }
+    // app/Models/Event.php
+    public function ticketOrders()
+    {
+        return $this->hasMany(\App\Models\TicketOrder::class);
+    }
+    public function checkins()
+{
+    return $this->hasMany(\App\Models\Checkin::class);
+}
+
+
+
+
+    
 } 

@@ -25,13 +25,13 @@
 <div id="coverSlider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
     <div class="carousel-inner">
         <div class="carousel-item active">
-            <img src="{{ asset('images/alam.jpg') }}" class="d-block w-100" alt="Cover 1">
+            <img src="{{ asset('images/concert_crowd_people_134866_3840x2160.jpg') }}" class="d-block w-100" alt="Cover 1">
         </div>
         <div class="carousel-item">
-            <img src="{{ asset('images/bukit.jpg') }}" class="d-block w-100" alt="Cover 2">
+            <img src="{{ asset('images/wp5310238.webp') }}" class="d-block w-100" alt="Cover 2">
         </div>
         <div class="carousel-item">
-            <img src="{{ asset('images/logo4.png') }}" class="d-block w-100" alt="Cover 3">
+            <img src="{{ asset('images/wp2463807.jpg') }}" class="d-block w-100" alt="Cover 3">
         </div>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#coverSlider" data-bs-slide="prev">

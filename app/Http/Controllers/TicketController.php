@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use Carbon\Carbon;
 
 use App\Models\Ticket;
 use App\Models\Event;
@@ -78,4 +79,45 @@ class TicketController extends Controller
             'message' => 'Tiket valid, silakan masuk'
         ]);
     }
+
+public function active()
+{
+    $events = Event::whereDate('event_date', '>', Carbon::today())
+        ->withCount([
+            'ticketOrders as tickets_sold_count' => function ($q) {
+                $q->where('status', 'confirmed');
+            },
+            'checkins as checkin_count'
+        ])
+        ->get();
+
+    foreach ($events as $event) {
+        $event->revenue = ($event->tickets_sold_count ?? 0) * $event->price;
+        $event->remaining_tickets = $event->capacity - ($event->tickets_sold_count ?? 0);
+        $event->not_checkin_count = ($event->tickets_sold_count ?? 0) - ($event->checkin_count ?? 0);
+    }
+
+    return view('admin.layouts.aktif_event', compact('events'));
+}
+
+public function completed()
+{
+    $events = Event::whereDate('event_date', '<=', Carbon::today())
+        ->withCount([
+            'ticketOrders as tickets_sold_count' => function ($q) {
+                $q->where('status', 'confirmed');
+            },
+            'checkins as checkin_count'
+        ])
+        ->get();
+
+    foreach ($events as $event) {
+        $event->revenue = ($event->tickets_sold_count ?? 0) * $event->price;
+        $event->remaining_tickets = $event->capacity - ($event->tickets_sold_count ?? 0);
+        $event->not_checkin_count = ($event->tickets_sold_count ?? 0) - ($event->checkin_count ?? 0);
+    }
+
+    return view('admin.layouts.done_event', compact('events'));
+}
+
 } 

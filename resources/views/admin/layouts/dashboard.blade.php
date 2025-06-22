@@ -4,18 +4,19 @@
 <div class="container">
     <!-- Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Event Terbaru</h1>
+        <h1 class="h3 mb-0 text-gray-800">All Event</h1>
     </div>
 
     <!-- Filter Section -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Filter Events</h6>
+    <div class="card shadow mb-4 rounded-3">
+        <div class="card-header py-3 bg-primary text-white rounded-top">
+            <h6 class="m-0 font-weight-bold">Filter Events</h6>
         </div>
         <div class="card-body">
             <form action="{{ route('admin.acara') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <input type="text" class="form-control" name="search" placeholder="Cari event..." value="{{ request('search') }}">
+                    <input type="text" class="form-control" name="search" placeholder="Cari event..."
+                        value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2">
                     <select class="form-select" name="type">
@@ -29,9 +30,9 @@
                     <select class="form-select" name="month">
                         <option value="">Semua Bulan</option>
                         @foreach(range(1, 12) as $m)
-                        <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
-                            {{ date('F', mktime(0, 0, 0, $m, 1)) }}
-                        </option>
+                            <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
+                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -39,7 +40,7 @@
                     <select class="form-select" name="year">
                         <option value="">Semua Tahun</option>
                         @foreach(range(date('Y'), date('Y') + 2) as $y)
-                        <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                            <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -47,12 +48,10 @@
                     <select class="form-select" name="venue">
                         <option value="">Semua Venue</option>
                         @foreach($venues as $venue)
-                        <option value="{{ $venue }}" {{ request('venue') == $venue ? 'selected' : '' }}>{{ $venue }}</option>
+                            <option value="{{ $venue }}" {{ request('venue') == $venue ? 'selected' : '' }}>{{ $venue }}</option>
                         @endforeach
                     </select>
                 </div>
-
-                <!-- Filter button -->
                 <div class="col-md-1 d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary w-100">Filter</button>
                 </div>
@@ -71,34 +70,50 @@
     </div>
 
     <!-- Event List -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Daftar Event</h6>
+    <div class="card shadow mb-4 rounded-3">
+        <div class="card-header py-3 bg-primary text-white rounded-top">
+            <h6 class="m-0 font-weight-bold">Daftar Event</h6>
         </div>
         <div class="card-body">
             <div class="row">
                 @forelse($events as $event)
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                    <img src="{{ asset($event->image) }}" class="card-img-top" alt="{{ $event->title }}" style="height: 200px; object-fit: cover;">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $event->title }}</h5>
-                            <p class="card-text">
-                                <i class="fas fa-calendar-alt"></i> {{ $event->formatted_date }}<br>
-                                <i class="fas fa-map-marker-alt"></i> {{ $event->venue }}, {{ $event->city }}<br>
-                                <i class="fas fa-tag"></i> {{ ucfirst($event->type) }}<br>
-                                <i class="fas fa-ticket-alt"></i> Rp {{ number_format($event->price, 0, ',', '.') }}
-                            </p>
-                            <a href="{{ route('events.show', $event) }}" class="btn btn-info btn-sm">
-                                <i class="fas fa-eye"></i> Detail
-                            </a>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm border-0 rounded-4">
+                            <img src="{{ asset($event->image) }}" class="card-img-top rounded-top" alt="{{ $event->title }}"
+                                style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ $event->title }}</h5>
+                                <p class="card-text mb-2 text-muted">
+                                    <i class="fas fa-dollar-sign text-success"></i>
+                                    Rp {{ number_format($event->price, 0, ',', '.') }} / tiket
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-money-bill-wave text-primary"></i>
+                                    Total Pendapatan: <strong>Rp {{ number_format($event->revenue, 0, ',', '.') }}</strong>
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-shopping-cart text-info"></i>
+                                    Tiket Terjual: <strong>{{ $event->tickets_sold_count }}</strong> dari {{ $event->capacity }}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="fas fa-sign-in-alt text-success"></i>
+                                    Sudah Check-in: <strong>{{ $event->checkin_count }}</strong>
+                                </p>
+                                <p class="card-text mb-3">
+                                    <i class="fas fa-user-clock text-warning"></i>
+                                    Belum Check-in: <strong>{{ $event->not_checkin_count }}</strong>
+                                </p>
+
+                                <a href="{{ route('events.show', $event) }}" class="btn btn-outline-info w-100">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @empty
-                <div class="col-12">
-                    <div class="alert alert-info">Tidak ada event yang ditemukan.</div>
-                </div>
+                    <div class="col-12">
+                        <div class="alert alert-info">Tidak ada event yang ditemukan.</div>
+                    </div>
                 @endforelse
             </div>
             <div class="d-flex justify-content-center mt-4">

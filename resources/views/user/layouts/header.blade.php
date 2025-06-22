@@ -176,7 +176,7 @@
 
     <!-- Kiri: Logo -->
     <div class="d-flex align-items-center">
-      <img src="/images/logo2.png" alt="Logo" width="150" height="65" class="me-2">
+      <img src="/images/logoo.png" alt="Logo" width="150" height="65" class="me-2">
     </div>
 
     <!-- Tengah: Hyperlink (Desktop) -->

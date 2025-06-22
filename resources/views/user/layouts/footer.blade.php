@@ -3,7 +3,7 @@
         <div class="row text-center text-md-start">
             <!-- Kolom 1: Logo dan Deskripsi -->
             <div class="col-md-3 mb-4">
-          <img src="/images/logo2.png" alt="Logo" width="100" height="45" class="me-5">
+          <img src="/images/logoo.png" alt="Logo" width="100" height="45" class="me-5">
                 <p style="margin-top: 15px;">
                     Best web for event lovers in Indonesia!<br>
                     Event ticket platform from <br>offline to online event streaming selections.

@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use Carbon\Carbon;
+
 
 class EventController extends Controller
 {
@@ -51,6 +54,7 @@ class EventController extends Controller
     // Dashboard untuk admin (login & role admin)
     public function adminDashboard(Request $request)
     {
+        
         $query = Event::query();
         if ($request->has('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
@@ -82,32 +86,148 @@ class EventController extends Controller
         $chartData = $this->getChartData($request);
         return view('admin.pages.dashboard.index', compact('events', 'stats', 'venues', 'chartData'));
     }
-    public function adminEvents(Request $request)
+        public function superadminDashboard(Request $request)
     {
         $query = Event::query();
 
-        // Filter
         if ($request->has('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
+
         if ($request->has('type') && $request->type != '') {
             $query->where('type', $request->type);
         }
+
         if ($request->has('month') && $request->month != '') {
             $query->whereMonth('event_date', $request->month);
         }
+
         if ($request->has('year') && $request->year != '') {
             $query->whereYear('event_date', $request->year);
         }
+
         if ($request->has('venue') && $request->venue != '') {
             $query->where('venue', $request->venue);
         }
+
         $query->where('status', 'upcoming');
         $query->orderBy('event_date', 'asc');
         $events = $query->paginate(9);
+
         $venues = Event::select('venue')->distinct()->orderBy('venue')->pluck('venue');
-        return view('admin.layouts.dashboard', compact('events', 'venues'));
+         $today = Carbon::today();
+        // Statistik sesuai permintaan
+        $stats = [
+            'total_eo' => User::where('role', 'admin')
+                            ->whereNotNull('name_eo')
+                            ->where('name_eo', '!=', '')
+                            ->distinct('name_eo')
+                            ->count('name_eo'),
+
+             'active_events' => Event::whereDate('event_date', '>', $today)->count(),
+
+        'finished_events' => Event::whereDate('event_date', '<=', $today)->count(),
+            'total_admin' => User::where('role', 'admin')->count(),
+            'total_superadmin' => User::where('role', 'superadmin')->count(),
+        ];
+
+        $chartData = $this->getChartData($request);
+
+        return view('admin.layouts.superadmin_dashboard', compact('events', 'stats', 'venues', 'chartData'));
     }
+   
+// public function adminDashboard(Request $request)
+// {
+//     $query = Event::query();
+
+//     if ($request->has('search')) {
+//         $query->where('title', 'like', '%' . $request->search . '%');
+//     }
+//     if ($request->has('type') && $request->type != '') {
+//         $query->where('type', $request->type);
+//     }
+//     if ($request->has('month') && $request->month != '') {
+//         $query->whereMonth('event_date', $request->month);
+//     }
+//     if ($request->has('year') && $request->year != '') {
+//         $query->whereYear('event_date', $request->year);
+//     }
+//     if ($request->has('venue') && $request->venue != '') {
+//         $query->where('venue', $request->venue);
+//     }
+
+//     $query->where('status', 'upcoming');
+//     $query->orderBy('event_date', 'asc');
+//     $events = $query->paginate(9);
+
+//     $venues = Event::select('venue')->distinct()->orderBy('venue')->pluck('venue');
+
+//     // 👇 Statistik baru sesuai permintaan
+//     $stats = [
+//         'total_eo' => User::where('role', 'eo')
+//                         ->whereNotNull('nama_eo')
+//                         ->where('nama_eo', '!=', '')
+//                         ->distinct('nama_eo')
+//                         ->count('nama_eo'),
+
+//         'active_events' => Event::where('status', 'aktif')->count(),
+//         'finished_events' => Event::where('status', 'selesai')->count(),
+//         'total_admin' => User::where('role', 'admin')->count(),
+//     ];
+
+//     $chartData = $this->getChartData($request);
+
+//     return view('admin.pages.dashboard.index', compact('events', 'stats', 'venues', 'chartData'));
+// }
+
+   public function adminEvents(Request $request)
+{
+    $query = Event::query();
+
+    // Filter pencarian
+    if ($request->has('search') && $request->search != '') {
+        $query->where('title', 'like', '%' . $request->search . '%');
+    }
+
+    if ($request->has('type') && $request->type != '') {
+        $query->where('type', $request->type);
+    }
+
+    if ($request->has('month') && $request->month != '') {
+        $query->whereMonth('event_date', $request->month);
+    }
+
+    if ($request->has('year') && $request->year != '') {
+        $query->whereYear('event_date', $request->year);
+    }
+
+    if ($request->has('venue') && $request->venue != '') {
+        $query->where('venue', $request->venue);
+    }
+
+    // Hanya ambil event dengan status upcoming
+    $query->where('status', 'upcoming')->orderBy('event_date', 'asc');
+
+    // Ambil data event + tiket terjual + checkin
+    $events = $query->withCount([
+        'ticketOrders as tickets_sold_count' => function ($query) {
+            $query->where('status', 'confirmed');
+        },
+        'checkins as checkin_count'
+    ])->paginate(9);
+
+    // Hitung revenue dan belum check-in
+    foreach ($events as $event) {
+        $event->revenue = $event->tickets_sold_count * $event->price;
+        $event->not_checkin_count = $event->tickets_sold_count - $event->checkin_count;
+    }
+
+    // Ambil daftar venue unik
+    $venues = Event::select('venue')->distinct()->orderBy('venue')->pluck('venue');
+
+    return view('admin.layouts.dashboard', compact('events', 'venues'));
+}
+
 
     public function show(Event $event)
     {
@@ -205,17 +325,16 @@ class EventController extends Controller
         ];
     }
 
-    public function orderForm(Event $event)
-    {
-         $jumlahTerjual = \App\Models\TicketOrder::where('event_id', $event->id)->count();
+public function orderForm(Event $event)
+{
+    $jumlahTerjual = \App\Models\TicketOrder::where('event_id', $event->id)->count();
 
-         if ($jumlahTerjual >= $event->capacity) {
+    if ($jumlahTerjual >= $event->capacity) {
         return redirect()->route('events.index')->with('error', 'Tiket untuk event ini sudah habis.');
-        }
+    }
 
-        // Data provinsi dan kabupaten/kota bisa diisi statis dulu
-      $provinces = [
-    'Aceh',
+    $provinces = [
+         'Aceh',
     'Sumatera Utara',
     'Sumatera Barat',
     'Riau',
@@ -253,43 +372,53 @@ class EventController extends Controller
     'Papua Pegunungan',
     'Papua Selatan',
     'Papua Barat Daya'
-];
+    ];
 
     $cities = [
-    'Banda Aceh','Langsa','Lhokseumawe','Sabang','Subulussalam',
-    'Medan','Binjai','Sibolga','Pematangsiantar','Tanjung Balai','Tebing Tinggi','Padang Sidempuan','Gunungsitoli',
-    'Bukittinggi','Padang','Padangpanjang','Pariaman','Payakumbuh','Sawahlunto','Solok',
-    'Pekanbaru','Dumai',
-    'Jambi','Sungai Penuh',
-    'Palembang','Prabumulih','Pagar Alam','Lubuklinggau',
-    'Bengkulu',
-    'Bandar Lampung','Metro',
-    'Pangkalpinang',
-    'Cilegon','Serang','Tangerang','Tangerang Selatan',
-    'Bandung','Banjar','Bekasi','Bogor','Cimahi','Cirebon','Depok','Sukabumi','Tasikmalaya',
-    'Jakarta', // Kota Administrasi DKI
-    'Magelang','Pekalongan','Purwokerto','Salatiga','Semarang','Surakarta','Tegal',
-    'Yogyakarta',
-    'Surabaya','Batu','Blitar','Kediri','Madiun','Malang','Mojokerto','Pasuruan','Probolinggo',
-    'Denpasar',
-    'Mataram','Bima','Kupang',
-    'Pontianak','Singkawang',
-    'Palangkaraya',
-    'Banjarbaru','Banjarmasin',
-    'Balikpapan','Bontang','Samarinda',
-    'Tarakan',
-    'Manado','Bitung','Kotamobagu','Tomohon',
-    'Gorontalo',
-    'Palu',
-    'Makassar','Palopo','Parepare',
-    'Kendari','Bau-Bau',
-    'Ambon','Tual',
-    'Ternate','Tidore Kepulauan',
-    'Jayapura'
+    'Aceh' => ['Banda Aceh','Langsa','Lhokseumawe','Sabang','Subulussalam'],
+    'Sumatera Utara' => ['Medan','Binjai','Sibolga','Pematangsiantar','Tanjung Balai','Tebing Tinggi','Padang Sidempuan','Gunungsitoli'],
+    'Sumatera Barat' => ['Padang','Bukittinggi','Padangpanjang','Pariaman','Payakumbuh','Sawahlunto','Solok'],
+    'Riau' => ['Pekanbaru','Dumai'],
+    'Kepulauan Riau' => ['Batam','Tanjungpinang'],
+    'Jambi' => ['Jambi','Sungai Penuh'],
+    'Bengkulu' => ['Bengkulu'],
+    'Sumatera Selatan' => ['Palembang','Lubuklinggau','Pagar Alam','Prabumulih'],
+    'Kepulauan Bangka Belitung' => ['Pangkalpinang'],
+    'Lampung' => ['Bandar Lampung','Metro'],
+    'DKI Jakarta' => ['Jakarta Pusat','Jakarta Utara','Jakarta Barat','Jakarta Selatan','Jakarta Timur'],
+    'Jawa Barat' => ['Bandung','Bekasi','Bogor','Cimahi','Cirebon','Depok','Sukabumi','Tasikmalaya','Banjar'],
+    'Banten' => ['Serang','Cilegon','Tangerang','Tangerang Selatan'],
+    'Jawa Tengah' => ['Semarang','Surakarta','Tegal','Pekalongan','Magelang','Salatiga'],
+    'DI Yogyakarta' => ['Yogyakarta'],
+    'Jawa Timur' => ['Surabaya','Malang','Madiun','Kediri','Blitar','Mojokerto','Pasuruan','Probolinggo','Batu'],
+    'Bali' => ['Denpasar'],
+    'Nusa Tenggara Barat' => ['Mataram','Bima'],
+    'Nusa Tenggara Timur' => ['Kupang'],
+    'Kalimantan Barat' => ['Pontianak','Singkawang'],
+    'Kalimantan Tengah' => ['Palangkaraya'],
+    'Kalimantan Selatan' => ['Banjarmasin','Banjarbaru'],
+    'Kalimantan Timur' => ['Samarinda','Balikpapan','Bontang'],
+    'Kalimantan Utara' => ['Tarakan'],
+    'Sulawesi Utara' => ['Manado','Bitung','Tomohon','Kotamobagu'],
+    'Gorontalo' => ['Gorontalo'],
+    'Sulawesi Tengah' => ['Palu'],
+    'Sulawesi Barat' => [], // Tidak memiliki kota administratif khusus
+    'Sulawesi Selatan' => ['Makassar','Parepare','Palopo'],
+    'Sulawesi Tenggara' => ['Kendari','Baubau'],
+    'Maluku' => ['Ambon','Tual'],
+    'Maluku Utara' => ['Ternate','Tidore Kepulauan'],
+    'Papua' => ['Jayapura'],
+    'Papua Barat' => ['Manokwari','Sorong'],
+    'Papua Tengah' => [], // Tidak ada kota administratif utama
+    'Papua Pegunungan' => [], // Belum ada kota administratif
+    'Papua Selatan' => [], // Belum ada kota administratif
+    'Papua Barat Daya' => [], // Belum ada kota administratif
 ];
 
-        return view('user.layouts.order', compact('event', 'provinces', 'cities'));
-    }
+
+    return view('user.layouts.order', compact('event', 'provinces', 'cities'));
+}
+
 
     public function processOrder(Request $request, Event $event)
     {

@@ -6,19 +6,20 @@
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-        @if(auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->role === 'superadmin'))
-            <a href="{{ route('tickets.export-excel') }}" class="btn btn-success mb-3">
-                <i class="fas fa-file-excel"></i> Download Excel (QR Code)
-            </a>
 
+        @if(auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->role === 'superadmin'))
+            <a href="{{ route('tickets.export-sheet') }}" method="GET" target="_blank" class="btn btn-primary mb-3">
+                <i class="fas fa-file-export"></i> Export ke Google Sheets
+            </a>
         @endif
+
 
 
         <div class="card shadow mb-4 rounded-4 border-0">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
                             <tr>
                                 <th>No</th>
                                 <th>Event</th>
@@ -50,7 +51,7 @@
                                     </td>
                                     <td>
                                         @if($order->proof)
-                                            <a href="{{ asset( $order->proof) }}" target="_blank"
+                                            <a href="{{ asset($order->proof) }}" target="_blank"
                                                 class="btn btn-outline-primary btn-sm px-2 py-1"><i class="fas fa-image me-1"></i>
                                                 Lihat Bukti</a>
                                         @else
@@ -64,21 +65,22 @@
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                         {{-- @if($order->status == 'confirmed')
-                                            <a href="{{ route('admin.tickets.download-qr', $order->id) }}"
-                                                class="btn btn-success btn-sm px-2 py-1 mb-1">
-                                                <i class="fas fa-qrcode"></i> Download QR
-                                            </a>
+                                        <a href="{{ route('admin.tickets.download-qr', $order->id) }}"
+                                            class="btn btn-success btn-sm px-2 py-1 mb-1">
+                                            <i class="fas fa-qrcode"></i> Download QR
+                                        </a>
                                         @else
-                                            <button type="button" class="btn btn-secondary btn-sm px-2 py-1 mb-1"
-                                                onclick="alert('Tiket belum dikonfirmasi!')" disabled>
-                                                <i class="fas fa-qrcode"></i> Download QR
-                                            </button>
-                                        @endif --}} 
+                                        <button type="button" class="btn btn-secondary btn-sm px-2 py-1 mb-1"
+                                            onclick="alert('Tiket belum dikonfirmasi!')" disabled>
+                                            <i class="fas fa-qrcode"></i> Download QR
+                                        </button>
+                                        @endif --}}
                                         <form action="{{ route('admin.tickets.destroy', $order->id) }}" method="POST"
                                             onsubmit="return confirm('Yakin ingin menghapus data ini?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash3"></i></button>
+                                            <button type="submit" class="btn btn-danger btn-sm"><i
+                                                    class="bi bi-trash3"></i></button>
                                         </form>
 
                                         @if($order->status == 'pending')

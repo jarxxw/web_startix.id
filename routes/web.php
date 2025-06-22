@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\AdminController;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\CheckinController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\GoogleSheetController;
 
 
 /*
@@ -38,6 +40,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Admin events viewable by guests
 Route::get('/admin/events', [EventController::class, 'index'])->name('admin.events.index');
 Route::get('/admin/acara', [EventController::class, 'adminEvents'])->name('admin.acara');
+Route::get('/admin/acara/on-going', [TicketController::class, 'active'])->name('admin.acara.aktif_event');
+Route::get('/admin/acara/done', [TicketController::class, 'completed'])->name('admin.acara.done_event');
+
+
 
 // --------------------
 // Admin (with auth middleware)
@@ -46,10 +52,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Dashboard
     Route::get('dashboard', [EventController::class, 'adminDashboard'])->name('dashboard');
+    Route::get('super/dashboard', [EventController::class, 'superadminDashboard'])->name('super.dashboard');
+
 
     // Ticket Order Routes
     Route::resource('tickets', TicketOrderController::class)->only(['index', 'show', 'update','destroy']);
     Route::get('tickets/{order}/download-qr', [TicketOrderController::class, 'downloadQrExcel'])->name('tickets.download-qr');
+    Route::get('/checkins', [CheckinController::class,'dataCheckins'])->name('checkins');
 
     // Admin and Event Management
     Route::resource('admins', AdminController::class);
@@ -69,6 +78,9 @@ Route::get('tickets/export-excel', [TicketOrderController::class, 'exportConfirm
 // Optional: Export all tickets (non-admin, if needed)
 Route::get('/export-tickets', [ExportController::class, 'export'])->name('export.tickets');
 Route::get('/order-success/{id}', [TicketOrderController::class, 'success'])->name('order.success');
+
+Route::get('/export-sheet', [GoogleSheetController::class, 'export'])->name('tickets.export-sheet');
+
 
 
 
