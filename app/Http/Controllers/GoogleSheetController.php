@@ -12,15 +12,13 @@ class GoogleSheetController extends Controller
     public function export()
     {
         $spreadsheetId = env('GOOGLE_SHEET_ID');
-        $credentialsPath = base_path(env('GOOGLE_APPLICATION_CREDENTIALS'));
+        $credentialsPath = storage_path('app/google/credentials.json');
 
-        // Cek apakah file kredensial ada
         if (!file_exists($credentialsPath)) {
             Log::error("File credentials tidak ditemukan di path: $credentialsPath");
             return back()->with('error', 'File credentials.json tidak ditemukan.');
         }
 
-        // Inisialisasi Google Client
         $client = new Client();
         $client->setAuthConfig($credentialsPath);
         $client->addScope(Sheets::SPREADSHEETS);
@@ -28,7 +26,6 @@ class GoogleSheetController extends Controller
 
         $service = new Sheets($client);
 
-        // Ambil data dari database
         $orders = TicketOrder::with('event')->get();
 
         $values = [
@@ -50,16 +47,12 @@ class GoogleSheetController extends Controller
             ];
         }
 
-        // Persiapkan body data untuk dikirim ke Sheet
         $body = new Sheets\ValueRange([
             'values' => $values
         ]);
 
         try {
-            // Hapus data sebelumnya agar tidak tumpang tindih
             $service->spreadsheets_values->clear($spreadsheetId, 'Sheet1', new Sheets\ClearValuesRequest());
-
-            // Kirim data ke Google Sheet
             $service->spreadsheets_values->update(
                 $spreadsheetId,
                 'Sheet1!A1',
@@ -67,8 +60,11 @@ class GoogleSheetController extends Controller
                 ['valueInputOption' => 'RAW']
             );
 
-            // Redirect langsung ke halaman Google Sheet
-            return redirect()->away("https://docs.google.com/spreadsheets/d/$spreadsheetId/edit");
+            // Simpan URL Google Sheet ke session
+            session()->flash('success', 'Data berhasil diekspor ke Google Sheets.');
+            session()->flash('sheet_url', "https://docs.google.com/spreadsheets/d/$spreadsheetId/edit");
+
+            return redirect()->route('admin.tickets.index');
 
         } catch (\Exception $e) {
             Log::error('Gagal ekspor ke Google Sheets: ' . $e->getMessage());
